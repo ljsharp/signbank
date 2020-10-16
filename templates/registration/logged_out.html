@@ -1,0 +1,10 @@
+{% extends "django_registration/registration_base.html" %}
+{% load i18n %}
+
+{% block bootstrap3_title %}{% blocktrans %}Logged Out{% endblocktrans %} | {% endblock %}
+
+{% block content %}
+<div class="alert alert-info" role="alert">
+    <h3>{% trans "Successfully logged out" %}.</h3>
+</div>
+{% endblock %}

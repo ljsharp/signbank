@@ -1,0 +1,208 @@
+{% extends "baselayout.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% block bootstrap3_title %}{% blocktrans %}Search Signs{% endblocktrans %} | {% endblock %}
+{% block extrajs %}
+<script src="{% static "js/mark.min.js" %}"></script>
+<script>
+/* Use mark.js to mark the keywords user searched for.
+This is not a bullet proof solution, especially when it comes to word boundaries;
+Javascript does not generally support UTF-8 word boundaries.
+*/
+$( document ).ready(function() {
+    var glossToMark = "{{request.GET.gloss}}";
+    var keywordToMark = "{{request.GET.keyword}}"
+    if (glossToMark.length > 1) {
+        var markGloss = new Mark(document.querySelectorAll("h3.gloss-idgloss"));
+        var glossRE = new RegExp("^" + glossToMark, "gmi");
+
+        markGloss.unmark({
+            done: function(){
+                markGloss.markRegExp(glossRE);
+            },
+        });
+
+    }
+    if (keywordToMark.length > 1) {
+        var markKeywords = new Mark(document.querySelectorAll("span.gloss-keywords"));
+        var markKeywordsOptions = {"exclude": ["em", ".ignore"],};
+        var keywordRE = new RegExp("(\\b" + keywordToMark + ")", "gmi");
+
+        markKeywords.unmark({
+            done: function(){
+                markKeywords.markRegExp(keywordRE, markKeywordsOptions);
+            },
+        });
+    }
+});
+</script>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h3>{% blocktrans %}Search signs{% endblocktrans %}
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseHelp" aria-expanded="false" aria-controls="collapseHelp">
+          {% blocktrans %}Help{% endblocktrans %} <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+        </button></h3>
+
+        <div class="collapse" id="collapseHelp">
+          <div class="well well-sm">
+          <section>
+            <header>
+              <h4>{% blocktrans %}How to use the search page?{% endblocktrans %}</h4>
+            </header>
+            <p>
+            {% static 'img/instructions/searchpage_instructions_fi-compressor.png' as ins_full_fi %}
+            {% static 'img/instructions/searchpage_instructions_fi_1140px-compressor.png' as ins_small_fi %}
+            {% static 'img/instructions/searchpage_instructions_en-compressor.png' as ins_en %}
+              <a href="{% if LANGUAGE_CODE == 'fi' %}{{ins_full_fi}}{% else %}{{ins_en}}{% endif %}" target="_blank">
+              <img src="{% if LANGUAGE_CODE == 'fi' %}{{ins_small_fi}}{% else %}{{ins_en}}{% endif %}"
+                   alt="{% blocktrans %}Instructions for how to use the search page.{% endblocktrans %}"
+                   class="img-responsive img-thumbnail">
+              </a>
+            </p>
+          </section>
+          </div>
+        </div>
+        <strong>{% blocktrans %}Browse glosses:{% endblocktrans %}</strong>
+        <div class="btn-group" role="group" aria-label="Browse">
+        {% for letter in first_letters %}
+            <a role="button" class="btn btn-default" href="?gloss={{letter.0|urlencode}}{% if request.GET.lang %}&lang={{request.GET.lang|urlencode}}{% endif %}{% if request.GET.dataset %}{% for ds in datasets %}&dataset={{ds|urlencode}}{% endfor %}{% endif %}">{{letter.0}}</a>
+        {% empty %}
+            {# Put nothing here if results set is empty #}
+        {% endfor %}
+        </div>
+        <hr style="margin-top:0px;margin-bottom:8px;">
+
+        {% if signlanguage_count and signlanguage_count > 1 %}
+        <ul class="nav nav-pills" style="background-color:#fcfdff;">
+            <li role="presentation" {% if 'lang' not in request.GET or request.GET.lang == '' %}class="active"{% endif %}>
+            <a href="?lang=&gloss={{request.GET.gloss|urlencode}}&keyword={{request.GET.keyword|urlencode}}">{% blocktrans %}All sign languages{% endblocktrans %}</a></li>
+            {% for signlang in signlanguages %}
+            <li role="presentation" {% if request.GET.lang == signlang.language_code_3char %}class="active"{% endif %}>
+                <a href="?lang={{signlang.language_code_3char|urlencode}}&gloss={{request.GET.gloss|urlencode}}&keyword={{request.GET.keyword|urlencode}}">{{ signlang.name }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {# Search form #}
+        <div class="panel panel-default">
+            <div class="panel-body">
+            <form action="{% url 'dictionary:public_gloss_list' %}" method="get" class="form">
+                {% if request.GET.lang and signlanguage_count > 1 %}
+                <input type="hidden" name="lang" value="{{request.GET.lang|urlencode}}">
+                {% endif %}
+                {% bootstrap_field searchform.gloss bound_css_class="not-bound" %}
+                {% bootstrap_field searchform.keyword bound_css_class="not-bound" %}
+                <div class="form-group">
+                    {% bootstrap_label searchform.dataset.label label_for="id_dataset" label_class="control-label" %}
+                    <div id="id_dataset">
+                    {% for checkbox in searchform.dataset %}{# Doing this manually so that we can add 'span label'. #}
+                    <div class="checkbox" style="display: inline-block;margin-top:0px;"><label for="{{checkbox.id_for_label}}">
+                        {{ checkbox.tag }} <span class="dataset-{{checkbox.data.value}}-color label label-default">{{ checkbox.choice_label }}</span></label>
+                    </div>
+                    {% endfor %}
+                        <div class="help-block hidden-xs" style="display:inline-block;">{{searchform.dataset.help_text}}</div>
+                        <div style="display:inline-block;">
+                            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseHelpLexicon" aria-expanded="false" aria-controls="collapseHelpLexicon">
+                              {% blocktrans %}Lexicons{% endblocktrans %} <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div class="collapse" id="collapseHelpLexicon">
+                            <div class="well well-sm">
+                            <section>
+                                <header>
+                                  <h4>{% blocktrans %}Description of the lexicons{% endblocktrans %}</h4>
+                                </header>
+                                {% for lexicon in lexicons %}
+                                <article>
+                                    <header><h5><strong><span class="dataset-{{lexicon.id}}-color label label-default">{{lexicon.public_name}}</span></strong></h5></header>
+                                    <p>{% autoescape off %}{{lexicon.description}}{% endautoescape %}</p>
+                                    <h5><strong>{% blocktrans %}Copyright and license:{% endblocktrans %}</strong></h5>
+                                    <p>{% autoescape off %}{{lexicon.copyright}}{% endautoescape %}</p>
+                                    {% if user.is_authenticated %}
+                                    <p>{% blocktrans %}ELAN ECV{% endblocktrans %}:
+                                        <a href="http://{{ request.get_host }}{% url 'dictionary:public_gloss_list_xml' lexicon.id %}">http://{{ request.get_host }}{% url 'dictionary:public_gloss_list_xml' lexicon.id %}</a></p>
+                                    {% endif %}
+                                </article>
+                                {% endfor %}
+                            </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <button type="submit" class="btn btn-primary" style="min-width:100px;">
+                        {% blocktrans context "public_search" %}Search{% endblocktrans %}
+                    </button>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+        <div class="pagination">
+
+    {% include "dictionary/paginate.html" %}
+
+    </div>
+<div class="row">
+
+    {% for obj in object_list %}
+    <div class="col-md-3 col-sm-6 col-xs-12 col-public-list">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-md-12">
+                    <a class="btn-block" href="{{obj.get_public_absolute_url}}"><h3 class="panel-title gloss-idgloss" style="text-align:center;">{{obj}}</h3>
+                        <span style="color:black;"><span class="glyphicon glyphicon-film" aria-hidden="true"
+                              title="{% blocktrans context "videocount" %}Videos{% endblocktrans %}"></span>
+                        {{obj.glossvideo_set.count}}</span>
+                        <span class="dataset-{{obj.dataset.id}}-color label label-default" style="float:right;margin-top:2px;">{{obj.dataset.public_name}}</span>
+                    </a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body embed-responsive embed-responsive-16by9"
+                 {% if obj.glossvideo_set.all.count > 0 %}style="background-color:rgb(33,33,33);"{% endif %}>
+            {% if obj.glossvideo_set.all.0 %}
+                <video id="glossvideo-{{obj.glossvideo_set.all.0.pk}}" class="video-public" preload="metadata" muted
+{% if obj.glossvideo_set.all.0.posterfile %} poster="{{obj.glossvideo_set.all.0.posterfile.url|urlencode}}"{% endif %}
+                onclick="this.paused?this.play():this.pause();" playsinline>
+                {% if obj.glossvideo_set.all.0.get_extension == '.mp4' %}
+                    <source src="{{obj.glossvideo_set.all.0.videofile.url|urlencode}}" type="video/mp4">
+                {% elif obj.glossvideo_set.all.0.get_extension == '.webm' %}
+                    <source src="{{obj.glossvideo_set.all.0.videofile.url|urlencode}}" type="video/webm">
+                {% endif %}
+                    {% blocktrans %}Your browser does not support the video tag.{% endblocktrans %}
+                </video>
+            {% else %}
+                <p><em>{% blocktrans %}No video.{% endblocktrans %}</em></p>
+            {% endif %}
+            </div>
+            <div class="panel-footer">
+            {% for glosstranslations in obj.glosstranslations_set.all %}
+                <h5><strong>{% blocktrans context "publicglosslist" %}Translation equivalents{% endblocktrans %} ({{ glosstranslations.language }}):</strong></h5>
+                <span class="gloss-keywords">
+                    {{glosstranslations}}
+                </span>
+            {% empty %}
+                <em>{% blocktrans %}No translation equivalents yet{% endblocktrans %}.</em>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+    {# These are used to fox horizontal alignment for grid. #}
+    {% if forloop.counter|divisibleby:"4" %}<div class="clearfix visible-lg-block visible-md-block"></div>{% endif %}
+    {% if forloop.counter|divisibleby:"2" %}<div class="clearfix visible-sm-block"></div>{% endif %}
+    {% empty %}
+    <div class="col-md-12">
+        <p><em>{% blocktrans %}No results.{% endblocktrans %}</em></p>
+    </div>
+    {% endfor %}
+</div>
+<div class="pagination">
+    {% include "dictionary/paginate.html" %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "django_registration/registration_base.html" %}
+{% load i18n %}
+
+{% block bootstrap3_title %}{% blocktrans %}Activation Complete{% endblocktrans %} | {% endblock %}
+
+{% block content %}
+<div class="alert alert-success" role="alert">
+    <h3>{% trans "Account activation completed successfully." %}</h3>
+</div>
+{% endblock %}

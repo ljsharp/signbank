@@ -1,0 +1,57 @@
+{% extends "django_registration/registration_base.html" %}
+{% load bootstrap3 %}
+{% load i18n %}
+
+{% block bootstrap3_title %}{% blocktrans %}Create an Account{% endblocktrans %} | {% endblock %}
+
+{% block content %}
+{% if not user.is_authenticated %}
+{# Translators: Title for create account#}
+<h3>{% blocktrans %}Create account{% endblocktrans%}</h3>
+<div class="panel panel-default">
+  <div class="panel-body">
+{% include 'django_registration/registration_info.html' %}
+  </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">{% blocktrans %}Create an account by filling in the information{% endblocktrans%}</h3>
+    </div>
+    <div class="panel-body">
+        <form method="post" action="">
+            {% csrf_token %}
+            {% bootstrap_form form exclude='tos' %}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h4 class="panel-title">{% blocktrans %}Terms of service{% endblocktrans %}</h4>
+                </div>
+                <div class="panel-body">
+                    <h4>{% blocktrans %}By creating an account on this site you (the "user") agree to the following conditions:{% endblocktrans %}</h4>
+                        {% include 'django_registration/terms_of_service.html' %}
+                </div>
+            </div>
+            {% bootstrap_field form.tos %}
+            <button type="submit" class="btn btn-primary">{% blocktrans %}Create account{% endblocktrans %}</button>
+        </form>
+    </div>
+</div>
+{% else %}
+    <h3>{% blocktrans %}Error{% endblocktrans %}</h3>
+    <div class="alert alert-danger" role="alert"><strong>
+        {% blocktrans %}Creating new accounts not permitted for users that are Signed in!{% endblocktrans %}
+    </strong></div>
+{% endif %}
+{% endblock %}
+
+
+{% comment %}
+**django_registration/registration_form.html**
+Used to show the form users will fill out to register. By default, has
+the following context:
+
+``form``
+    The registration form. This will be an instance of some subclass
+    of ``django.forms.Form``; consult `Django's forms documentation
+    <http://docs.djangoproject.com/en/dev/topics/forms/>`_ for
+    information on how to display this in a template.
+{% endcomment %}

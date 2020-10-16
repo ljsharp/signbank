@@ -1,0 +1,37 @@
+{
+  "name": "finsl-signbank",
+  "version": "1.0.0",
+  "description": "sign language lexicon database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "collectjs": "cp -f ./node_modules/*/dist/*min.js ./signbank/static/js && cp -f ./node_modules/recordrtc/RecordRTC.min.js ./signbank/static/js && cp -f ./node_modules/at.js/dist/js/jquery.atwho.min.js ./signbank/static/js && cp -f ./node_modules/cookieconsent/build/cookieconsent.min.js ./signbank/static/js && cp -f ./node_modules/sigma/build/sigma.min.js ./signbank/static/js && cp -f ./node_modules/sigma/build/plugins/sigma.layout.forceAtlas2.min.js ./signbank/static/js",
+    "collectcss": "cp -f ./node_modules/at.js/dist/css/jquery.atwho.min.css ./signbank/static/css && cp -rf ./node_modules/bootstrap/dist/* ./signbank/static/bootstrap/ && cp -f ./node_modules/cookieconsent/build/cookieconsent.min.css ./signbank/static/css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Signbank/FinSL-signbank.git"
+  },
+  "keywords": [
+    "signlanguage"
+  ],
+  "author": "Henri Nieminen",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Signbank/FinSL-signbank/issues"
+  },
+  "homepage": "https://github.com/Signbank/FinSL-signbank#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "TagManager": "git+https://github.com/max-favilli/tagmanager.git",
+    "at.js": "^1.5.4",
+    "bootstrap": "^3.4.1",
+    "jquery": "^3.4.0",
+    "jquery.caret": "^0.3.1",
+    "mark.js": "^8.11.1",
+    "recordrtc": "^5.5.9",
+    "sigma": "^1.2.1",
+    "typeahead.js": "^0.11.1",
+    "cookieconsent": "^3.1.1"
+  }
+}

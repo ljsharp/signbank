@@ -1,0 +1,32 @@
+{% extends 'baselayout.html' %}
+{% load stylesheet %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% block bootstrap3_title %}{% blocktrans %}Create Gloss{% endblocktrans %} | {% endblock %}
+
+{% block content %}
+    {% if perms.dictionary.add_gloss %}
+    <div id="addgloss">
+        {# Translators: #}
+        <h3>{% blocktrans %}Create a Gloss{% endblocktrans %}</h3>
+        <form enctype="multipart/form-data" action='{% url "dictionary:create_gloss" %}' method='post'>
+            {% csrf_token %}
+
+            {% bootstrap_field form.dataset %}
+
+            {% bootstrap_field form.idgloss %}
+            {% bootstrap_field form.idgloss_en %}
+
+            {% bootstrap_field glossvideoform.videofile %}
+            {% bootstrap_field glossvideoform.title %}
+
+            {% bootstrap_field form.tag %}
+
+            <input class='btn btn-primary' type='submit' value='{% blocktrans %}Create Gloss{% endblocktrans %}'>
+        </form>
+    </div>
+    {% else %}
+    {# Translators: Message that appears if user doesn't have proper user rights to view this page. #}
+    <p>{% blocktrans %}You do not have sufficient user rights to view this page.{% endblocktrans %}</p>
+    {% endif %}
+{% endblock %}

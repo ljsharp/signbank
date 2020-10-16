@@ -1,0 +1,159 @@
+{% extends 'baselayout.html' %}
+{% load stylesheet %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% block bootstrap3_title %}{% blocktrans %}Links and Statistics{% endblocktrans %} | {% endblock %}
+{% block content %}
+    {% if perms.dictionary.search_gloss %}
+    <div id="infopage" class="container-fluid">
+        {# Translators: Header for infopage #}
+        <div class="row">
+            <div class="col-md-6">
+                <h2>{% blocktrans %}Links and statistics{% endblocktrans %}</h2>
+                <p>{% blocktrans trimmed %}On this page you can find numerical data about the database, and
+                    links to externally controlled vocabularies to be used in ELAN.{% endblocktrans %}</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{% blocktrans %}All lexicons{% endblocktrans %}</h3>
+                    </div>
+                    <div class="panel-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <td>{% blocktrans %}Gloss count{% endblocktrans %}</td>
+                            <td>{{context.gloss_count}}</td>
+                        </tr>
+                         <tr>
+                            <td>{% blocktrans %}Glosses with video{% endblocktrans %}</td>
+                            <td>{{context.glosses_with_video}}</td>
+                        </tr>
+                        <tr>
+                            <td>{% blocktrans %}Video count{% endblocktrans %}</td>
+                            <td>{{context.glossvideo_count}}</td>
+                        </tr>
+                        <tr>
+                            <td>{% blocktrans %}Videos not connected to a Gloss{% endblocktrans %}</td>
+                            <td>{{context.glossless_video_count}}</td>
+                        </tr>
+                        <tr>
+                            <td>{% blocktrans %}Videos with poster image{% endblocktrans %}</td>
+                            <td>{{context.glossvideo_poster_count}}</td>
+                        </tr>
+                        <tr>
+                            <td>{% blocktrans %}Videos without poster image{% endblocktrans %}</td>
+                            <td>{{context.glossvideo_noposter_count}}</td>
+                        </tr>
+                    </table>
+                    <h4>{% blocktrans %}Translation equivalents{% endblocktrans %}:</h4>
+                    <table class="table table-bordered">
+                        {% for language in context.languages %}
+                        <tr>
+                            <td>{{language}}</td>
+                            <td>{{language.translation_set.count}}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                </div>
+            </div>
+            <div id="ELANinfo" class="col-md-6">
+                <div class="well">
+                    <h4>{% blocktrans %}ELAN externally controlled vocabulary links{% endblocktrans %}</h4>
+                    <ul>
+                        {% for dataset in datasets %}
+                        <li style="list-style-type:none;margin-bottom:2px;">
+                            <span class="dataset-{{dataset.dataset.id}}-color label label-default">
+                                {{dataset.dataset}}</span>
+                            <a href="http://{{ request.get_host }}/dictionary/ecv/{{ dataset.dataset.pk }}"
+                               target="_blank">
+                                http://{{ request.get_host }}/dictionary/ecv/{{ dataset.dataset.pk }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <h4>{% blocktrans %}Signbank Wiki{% endblocktrans %}
+                        <small>{% blocktrans %}Help and tutorials{% endblocktrans %}</small></h4>
+                    <p><a href ="https://github.com/Signbank/FinSL-signbank/wiki" target="_blank">
+                        https://github.com/Signbank/FinSL-signbank/wiki</a></p>
+                </div>
+            </div>
+            {% if user.is_staff and context.psql_db_size and context.psql_db_size_pretty and context.psql_db_usage %}
+            {# This shows the usage of database quota, works only if you use postgresql #}
+            <div class="col-md-6">
+                <h4>{% blocktrans %}Database storage space usage{% endblocktrans %}</h4>
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{context.psql_db_usage}}%;">
+                    {{context.psql_db_usage}}%
+                  </div>
+                </div>
+                <p>{% blocktrans %}Space used{% endblocktrans %}: {{context.psql_db_size_pretty}}</p>
+            </div>
+            {% endif %}
+            {% if request.user.is_staff and context.problems %}
+            <div class="col-md-6">
+                <h4>{% blocktrans %}Files that do not exist{% endblocktrans %} ({{context.problems|length}}): </h4>
+                <ul>
+                {% for p in context.problems %}
+                    <li><a href="{% url "admin:video_glossvideo_change" p.id %}">{{p.type}} {{p.id}}, {{p.file}}</a></li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <div class="row">
+            {% for dataset in datasets %}
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{% blocktrans %}Lexicon{% endblocktrans %}
+                            <span class="dataset-{{dataset.dataset.id}}-color label label-default">{{dataset.dataset}}</span></h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td>{% blocktrans %}Gloss count{% endblocktrans %}</td>
+                                <td>{{dataset.gloss_count}}</td>
+                            </tr>
+                             <tr>
+                                <td>{% blocktrans %}Glosses with video{% endblocktrans %}</td>
+                                <td>{{dataset.glosses_with_video}}</td>
+                            </tr>
+                            <tr>
+                                <td>{% blocktrans %}Video count{% endblocktrans %}</td>
+                                <td>{{dataset.glossvideo_count}}</td>
+                            </tr>
+                            <tr>
+                                <td>{% blocktrans %}Videos not connected to a Gloss{% endblocktrans %}</td>
+                                <td>{{dataset.glossless_video_count}}</td>
+                            </tr>
+                            <tr>
+                                <td>{% blocktrans %}Videos with poster image{% endblocktrans %}</td>
+                                <td>{{dataset.glossvideo_poster_count}}</td>
+                            </tr>
+                            <tr>
+                                <td>{% blocktrans %}Videos without poster image{% endblocktrans %}</td>
+                                <td>{{dataset.glossvideo_noposter_count}}</td>
+                            </tr>
+                        </table>
+                        <h4>{% blocktrans %}Translation equivalents{% endblocktrans %}:</h4>
+                        <table class="table table-bordered">
+                            {% for language, translation_count in dataset.translations %}
+                            <tr>
+                                <td>{{language}}</td>
+                                <td>{{translation_count}}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    {# Translators: Message that appears if user doesn't have proper user rights to view this page. #}
+    <p>{% blocktrans %}You do not have sufficient user rights to view this page.{% endblocktrans %}</p>
+    {% endif %}
+{% endblock %}

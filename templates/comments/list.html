@@ -1,0 +1,81 @@
+{% load i18n %}
+{% load bootstrap3 %}
+<script type="text/javascript">
+function load_comment_edit(commentid) {
+    $( "#edit_comment_body" ).load('/comments/update/'+commentid+'/');
+}
+</script>
+<div id="comments">
+        {% for comment in comment_list %}
+        {% load tagging_tags %}
+        {% tags_for_object comment as tag_list %}
+        <article class="comment">
+            <header id="c{{ comment.id }}">
+                <strong>{{ comment.submit_date }} -
+                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{ comment.user }}</strong>
+            {% if user.is_authenticated %}
+                {% if user == comment.user %}
+                <button id="edit_comment_{{comment.id}}" class="btn-comment-edit btn btn-primary btn-xs
+                {% if user != comment.user and user.is_staff %} comment_delete_staff{% endif %}"
+                        data-toggle="modal" data-target="#edit_comment_modal"
+                        onclick="load_comment_edit({{comment.id}})">{% blocktrans %}Edit{% endblocktrans %}</button>
+                {% endif %}
+                {% if user == comment.user or user.is_staff %}
+                <button id="delete_comment_{{comment.id}}" class="btn-comment-delete btn-danger btn btn-xs
+                {% if user != comment.user and user.is_staff %} comment_delete_staff{% endif %}"
+                        data-comment-id="{{comment.id}}" data-toggle="modal" data-target=".delete_comment_modal"
+                        style="margin-top:0px;margin-bottom:0px;
+                        {% if user != comment.user and user.is_staff %}display:none;{% endif %}">{% blocktrans %}Delete{% endblocktrans %}</button>
+                {% endif %}
+            {% endif %}
+                <div class="comment-tags" style="display:inline;">
+            {% for tag in tag_list %}
+                    <div class="comment-tag" style="display:inline-block;">
+                        <form method="POST" action="{% url 'remove-comment-tag' %}">{% csrf_token %}
+                            <input type="hidden" name="comment_id" value="{{comment.id}}">
+                            <input type="hidden" name="remove_tag_id" value="{{tag.id}}">
+                        <span class="label label-info">{{tag.name}}
+                            <input class="btn-danger remove_comment_tag" type="submit" value="x" style="display:none;"></span>
+                        </form>
+                    </div>
+            {% endfor %}
+                </div>
+            </header>
+            <p>{{ comment.comment }}</p>
+        </article>
+        {% empty %}
+        <p><em>{% blocktrans %}No comments.{% endblocktrans %}</em></p>
+        {% endfor %}
+</div>
+<div id="delete_comment_modal" class="modal fade delete_comment_modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmCommentDeleteModal">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ConfirmCommentDeleteModal">{% blocktrans %}Delete comment?{% endblocktrans %}</h4>
+      </div>
+      <div class="modal-body">
+          <form action="" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="comment_id" value="">
+            <input type="hidden" name="next" value="{{request.path}}">
+            {# Translators: Confirm delete button for deleting a comment. #}
+            <button type="submit" class="btn btn-primary">{% blocktrans %}Confirm Delete{% endblocktrans %}
+            </button>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="edit_comment_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="EditCommentModal">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="EditCommentModal">{% blocktrans %}Edit comment{% endblocktrans %}</h4>
+      </div>
+      <div class="modal-body" id="edit_comment_body">
+      </div>
+    </div>
+  </div>
+</div>

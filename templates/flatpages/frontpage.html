@@ -1,0 +1,24 @@
+{% extends "flatpages/default.html" %}
+{% load i18n %}
+{% block pagecontent %}
+<div class='row'>
+    <div class="{% if perms.dictionary.search_gloss %}col-md-8{% else %}col-md-12{% endif %}">
+    {{ flatpage.content }}
+    </div>
+    {% if perms.dictionary.search_gloss %}
+    <div class="col-md-4" id="front-right">
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extrajs %}
+    {% if perms.dictionary.search_gloss %}
+    <script type="text/javascript">
+    $(document).ready(function() {
+     $('#front-right').load('/comments/latest/');
+    });
+    </script>
+    {% endif %}
+{% endblock %}
+
+

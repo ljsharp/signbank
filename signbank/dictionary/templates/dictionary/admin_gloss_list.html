@@ -1,0 +1,222 @@
+{% extends "baselayout.html" %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load staticfiles %}
+{# Translators: Title for sign search page #}
+{% block bootstrap3_title %}{% blocktrans %}Advanced Search{% endblocktrans %} | {% endblock %}
+{% block extrahead %}
+<link rel="stylesheet" href="{% static 'css/jquery-ui/jquery-ui.min.css' %}">
+{% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/video-tooltip.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/typeahead.bundle.min.js' %}"></script>
+
+<script type='text/javascript'>
+$(document).ready(function(){
+    $('.collapsetoggle').on('click', function() {
+        if ($(this).text() == 'Show') {
+            $(this).text('Hide');
+        } else {
+            $(this).text('Show');
+        }
+    });
+});
+
+
+// http://www.javascript-coder.com/javascript-form/javascript-reset-form.phtml
+function clearForm(myFormElement) {
+
+  var elements = myFormElement.elements;
+
+  myFormElement.reset();
+
+  for(i=0; i<elements.length; i++) {
+
+      field_type = elements[i].type.toLowerCase();
+    
+      switch(field_type) {
+    
+        case "text":
+        case "password":
+        case "textarea":
+        case "hidden":
+    
+          elements[i].value = "";
+          break;
+    
+        case "radio":
+        case "checkbox":
+            if (elements[i].checked) {
+              elements[i].checked = false;
+          }
+          break;
+    
+        case "select-one":
+        case "select-multiple":
+                    elements[i].selectedIndex = -1;
+          break;
+    
+        default:
+          break;
+      }
+    }
+    return(false);
+}
+   </script>
+{% endblock %}
+
+{% block content %}
+
+{# Translators: admin_gloss_list header #}
+<h2>{% blocktrans %}Search Glosses{% endblocktrans %}</h2>
+<div id='searchformwell' class='well well-sm'>
+    <form name='adminsearch' id='adminsearch'>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2 col-sm-6 searchinput">
+                    {% bootstrap_label searchform.dataset.label %}
+                    {% bootstrap_field searchform.dataset show_label=False bound_css_class="not-bound" %}
+                </div>
+                <div class="col-md-5 col-sm-6 searchinput">
+                    <div class='input-group'>
+                        <label class='input-group-addon' for='id_search'>{{searchform.search.label}}</label>
+                        <input id="id_search" name='search' class='form-control'
+                               {% if searchform.search.value %}value='{{searchform.search.value}}' {% endif %}
+                               placeholder='{% blocktrans %}Gloss, Note, Translation, contains string{% endblocktrans %}'>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-6 searchinput">
+                    <div class='input-group'>
+                        <label class='input-group-addon' for='id_idgloss'>{{searchform.gloss.label}}</label>
+                        <input id="id_idgloss" name='gloss' class='form-control'
+                               {% if searchform.gloss.value %}value='{{searchform.gloss.value}}' {% endif %}
+                               placeholder='{% blocktrans %}Begins with string{% endblocktrans %}'>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-6 searchinput">
+                    <div class='input-group'>
+                        <label class='input-group-addon' for='id_idgloss_en'>{{searchform.idgloss_en.label}}</label>
+                        <input id="id_idgloss_en" name='idgloss_en' class='form-control'
+                               {% if searchform.idgloss_en.value %}value='{{searchform.idgloss_en.value}}' {% endif %}
+                               placeholder='{% blocktrans %}Begins with string{% endblocktrans %}'>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-6 searchinput">
+                   <div class='input-group'>
+                        <label class='input-group-addon' for='id_notes'>{{searchform.notes.label}}</label>
+                        <input id="id_notes" name='notes' class='form-control'
+                               {% if searchform.notes.value %}value='{{searchform.notes.value}}' {% endif %}
+                               placeholder='{% blocktrans %}Contains string{% endblocktrans %}'>
+                   </div>
+                </div>
+                 <div class="col-md-5 col-sm-6 searchinput">
+                    <div class='input-group'>
+                        <label class='input-group-addon' for='id_keyword'>{{searchform.keyword.label}}</label>
+                        {% bootstrap_field searchform.trans_lang show_label=False bound_css_class="not-bound" %}
+                        <input id="id_keyword" name='keyword' class='form-control'
+                               {% if searchform.keyword.value %}value='{{searchform.keyword.value}}' {% endif %}
+                               placeholder='{% blocktrans %}Contains string{% endblocktrans %}'>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-6 searchinput searchcolor">
+                        <ul class="list-group list-inline">
+                          <li class="list-group-item list-group-item-success">{% bootstrap_field searchform.published show_label=False bound_css_class="not-bound" %}</li>
+                          <li class="list-group-item list-group-item-warning">{% bootstrap_field searchform.hasvideo show_label=False bound_css_class="not-bound" %}</li>
+                          <li class="list-group-item list-group-item-danger">{% bootstrap_field searchform.hasnovideo show_label=False bound_css_class="not-bound" %}</li>
+                          <li class="list-group-item">{% bootstrap_field searchform.multiplevideos show_label=False bound_css_class="not-bound" %}</li>
+                        </ul>
+                </div>
+                <div class="col-md-6 col-sm-6 searchinput">
+                   <div class="input-group">
+                       <label class="input-group-addon" for="id_tags">{{searchform.tags.label}}</label>
+                       {% bootstrap_field searchform.tags show_label=False bound_css_class="not-bound" %}
+                   </div>
+                </div>
+                <div class="col-md-6 col-sm-6 searchinput">
+                    <div class="input-group">
+                        <label class="input-group-addon" for="id_signlanguage">{{searchform.signlanguage.label}}</label>
+                        {% bootstrap_field searchform.signlanguage show_label=False bound_css_class="not-bound" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="searchform-separator">
+        <div class='btn-group'>
+            <input class='btn btn-primary' type='submit' name='submit' value='{% blocktrans context "search-button" %}Search{% endblocktrans %}'>
+            {% if perms.dictionary.export_csv %}
+            <input class='btn btn-default' type='submit' name='format' value='{% blocktrans %}CSV{% endblocktrans %}'>
+            {% endif %}
+            <input class='btn btn-default' type='submit' onclick="clearForm(document.adminsearch);" value='{% blocktrans %}Reset{% endblocktrans %}'>
+        </div>
+
+        <div class='form-group' id='paginate_by'>
+            {# Translators: How many results to fit per page  #}
+            <label for='paginate_by'>{% blocktrans %}Results per page{% endblocktrans %}</label>
+            <select class='form-control' name="paginate_by">
+                <option{% if paginator.per_page == 3000 %} selected{% endif %}>3000</option>
+                <option{% if paginator.per_page == 2000 %} selected{% endif %}>2000</option>
+                <option{% if paginator.per_page == 1000 %} selected{% endif %}>1000</option>
+                <option{% if paginator.per_page == 500 %} selected{% endif %}>500</option>
+                <option{% if paginator.per_page == 100 %} selected{% endif %}>100</option>
+                <option{% if paginator.per_page == 50 %} selected{% endif %}>50</option>
+                <option{% if paginator.per_page == 25 %} selected{% endif %}>25</option>
+                <option{% if paginator.per_page == 10 %} selected{% endif %}>10</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+{# Translators: How many matches out of possible  #}
+<p>{% blocktrans %}Number of matches:{% endblocktrans %} {{ page_obj.paginator.count }}.</p>
+
+{% if object_list %}
+<nav aria-label="{% blocktrans %}Page navigation top{% endblocktrans %}">
+    {% include "dictionary/paginate.html" %}
+</nav>
+<table class='table table-condensed'>
+    <thead>
+        <tr>
+            <th>{% blocktrans %}Dataset{% endblocktrans %}</th>
+            <th>{% blocktrans %}Gloss{% endblocktrans %} <a href="?search={{request.GET.search}}{% for key,value in request.GET.items %}{% if not key  == 'search' and not key == 'order' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if order == 'idgloss' or request.GET.order == 'idgloss' %}&order=-idgloss{% else %}&order=idgloss{% endif %}">
+                <span class="{% if request.GET.order|slice:":1" == "-" %}glyphicon glyphicon-sort-by-alphabet{% else %}glyphicon glyphicon-sort-by-alphabet-alt{% endif %}" aria-hidden="true"></span></a></th>
+            <th>{% blocktrans %}Gloss in English{% endblocktrans %} <a href="?search={{request.GET.search}}{% for key,value in request.GET.items %}{% if not key  == 'search' and not key == 'order' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if order == 'idgloss_en' or request.GET.order == 'idgloss_en' %}&order=-idgloss_en{% else %}&order=idgloss_en{% endif %}">
+                <span class="{% if request.GET.order|slice:":1" == "-" %}glyphicon glyphicon-sort-by-alphabet{% else %}glyphicon glyphicon-sort-by-alphabet-alt{% endif %}" aria-hidden="true"></span></a></th>
+            <th>{% blocktrans %}Translation equivalents{% endblocktrans %}</th>
+            <th>{% blocktrans %}Notes{% endblocktrans %}</th>
+            <th>{% blocktrans %}Tags{% endblocktrans %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for gloss in object_list %}
+        {# Here we decide/change the row background colors #}
+        <tr {% if gloss.published %}class="success"{% elif gloss.glossvideo_set.exists %}class="warning"{% else %}class="danger"{% endif %}>
+            <td><span class="dataset-{{gloss.dataset.id}}-color label label-default">{{ gloss.dataset }}</span></td>
+            {# Insert glossvideo.posterfile.url into data-thumbnail-src, if the highest priority gloss has one. #}
+            <td><a href="{% url 'dictionary:admin_gloss_view' pk=gloss.pk %}"
+                   data-thumbnail-src="{% if gloss.glossvideo_set.all.0.posterfile %}{{gloss.glossvideo_set.all.0.posterfile.url}}{% endif %}"
+                   data-video-src="{% if gloss.glossvideo_set.all.0.videofile %}{{ gloss.glossvideo_set.all.0.videofile.url }}"
+                   data-video-ext="{{ gloss.glossvideo_set.all.0.get_extension|slice:"1:" }}{% endif %}">{{ gloss.idgloss }}</a>
+                {% if gloss.glossvideo_set.count > 1 %}<span class="glyphicon glyphicon-film" aria-hidden="true"
+                                                             title="{% blocktrans %}Videos{% endblocktrans %}" style="margin-left:5px;"></span>
+                <span class="sr-only">{% blocktrans context "sr-videos" %}Videos{% endblocktrans %}:</span> {{gloss.glossvideo_set.count}}{% endif %}</td>
+            <td>{{ gloss.idgloss_en }}</td>
+            <td> {# Prefetched translations of 'language_code_2char==get_language()' for glosses #}
+                {% for translation in gloss.translation_set.all %}{# Set a comma after all items except the last one #}
+                    {% if forloop.last %}{{ translation.keyword }}
+                    {% else %}{{ translation.keyword }},{% endif %}
+                {% endfor %}
+            </td>
+            <td>{{ gloss.notes }}</td>
+            <td>{% for tag in gloss.cached_tags %}<span class='tag'>{{ tag }}</span>{% endfor %}</td>
+        </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<nav aria-label="{% blocktrans %}Page navigation bottom{% endblocktrans %}">
+    {% include "dictionary/paginate.html" %}
+</nav>
+{% endif %}
+
+{% endblock content %}

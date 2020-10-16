@@ -1,0 +1,103 @@
+{% load i18n %}
+{% load staticfiles %}
+
+<div id="upload_recorded_vid">
+  <!--
+  <button type="button" class="btn btn-info navbar-btn" id="btn-record-video" data-toggle="modal" data-target="#record-video-Modal">{% blocktrans %}Record a video{% endblocktrans %}</button>
+  -->
+  <!-- Modal -->
+<div class="modal fade" id="record-video-Modal" tabindex="-1" role="dialog" aria-labelledby="record-video-ModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="record-video-ModalLabel">{% blocktrans %}Record a video for{% endblocktrans %}
+                <span class="label label-default">{{gloss.dataset}}</span> {{gloss.idgloss}}</h4>
+            </div>
+            <div class="modal-body">
+
+              <section class="recordrtc">
+                  <h2 class="header" style="text-align: center;">
+                      <button id="btn-start-recording" class="btn">{%blocktrans%}Start Recording{%endblocktrans%}</button>
+                  </h2>
+
+                  <div style="text-align: center; display: none;">
+                      <button id="upload-to-server" class="btn btn-primary">{%blocktrans%}Upload{%endblocktrans%}</button>
+                  </div>
+
+                  <div class="embed-responsive embed-responsive-16by9" style="margin-top: 10px;">
+                      <video class="rtcvideo" controls muted></video>
+                  </div>
+              </section>
+
+            </div>
+            <div class="modal-footer" style="text-align:center;">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onClick="window.location.reload()">{%blocktrans%}Close{%endblocktrans%}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal ends -->
+<script>
+// Reload this modal when closed, so that the uploaded videos appear on the page.
+$('#record-video-Modal').on('hidden.bs.modal', function (e) {
+    location.reload();
+})
+</script>
+<script>
+    (function() {
+        var params = {},
+            r = /([^&=]+)=?([^&]*)/g;
+
+        function d(s) {
+            return decodeURIComponent(s.replace(/\+/g, ' '));
+        }
+
+        var match, search = window.location.search;
+        while (match = r.exec(search.substring(1))) {
+            params[d(match[1])] = d(match[2]);
+
+            if(d(match[2]) === 'true' || d(match[2]) === 'false') {
+                params[d(match[1])] = d(match[2]) === 'true' ? true : false;
+            }
+        }
+
+        window.params = params;
+    })();
+
+    function addStreamStopListener(stream, callback) {
+        var streamEndedEvent = 'ended';
+
+        if ('oninactive' in stream) {
+            streamEndedEvent = 'inactive';
+        }
+
+        stream.addEventListener(streamEndedEvent, function() {
+            callback();
+            callback = function() {};
+        }, false);
+
+        stream.getVideoTracks().forEach(function(track) {
+            track.addEventListener(streamEndedEvent, function() {
+                callback();
+                callback = function() {};
+            }, false);
+        });
+    }
+</script>
+
+<script>
+    var csrf_token = "{{csrf_token}}";
+    var gloss_pk = {{gloss.pk}};
+    var start_recording_text = "{%blocktrans%}Start Recording{%endblocktrans%}";
+    var stop_recording_text = "{%blocktrans%}Stop Recording{%endblocktrans%}";
+    var resolution_error_text = "{%blocktrans%}Your camera or browser does NOT supports selected resolutions or frame-rates. \n\nPlease select 'default' resolutions.{%endblocktrans%}";
+    var no_recording_found_text = "{%blocktrans%}No recording found{%endblocktrans%}.";
+    var download_text = "{%blocktrans%}Click to download from server{%endblocktrans%}";
+    var upload_completed_text = "{%blocktrans%}Upload completed.{%endblocktrans%}";
+    var stop_text = "{%blocktrans%}Stop Recording{%endblocktrans%}";
+
+</script>
+<script src="{% static 'js/signbank-video-record.js' %}"></script>
+
+</div>

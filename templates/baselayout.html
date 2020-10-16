@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+{% load bootstrap3 %}
+{% load stylesheet %}
+{% load i18n %}
+{% load staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{LANGUAGE_CODE|default:'en'}}">
+  <head>
+    <title>{% block bootstrap3_title %}{% endblock %}{% blocktrans %}Finnish Signbank{% endblocktrans %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    {% block metadesc %}<meta name="description" content="{% blocktrans context 'meta' %}Finnish Signbank is a lexical database of Finnish Sign Language (FinSL) and Finland-Swedish Sign Language (FinSSL).{% endblocktrans %}">{% endblock %}
+
+    {% block ogimage %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/signbank_logo_ympyra1_sininen-compressor.png' %}">{% endblock %}
+    {% block ogdesc %}<meta property="og:description" content="{% blocktrans context 'meta' %}Finnish Signbank is a lexical database of Finnish Sign Language (FinSL) and Finland-Swedish Sign Language (FinSSL).{% endblocktrans %}">{% endblock %}
+    {% block metatitles %}
+    <meta property="og:title" content="{% blocktrans context 'meta' %}Finnish Signbank{% endblocktrans %}">
+    <meta name="twitter:title" content="{% blocktrans context 'meta' %}Finnish Signbank{% endblocktrans %}">
+    {% endblock %}
+<script type="application/ld+json">
+// Structured data for Google
+// Logo
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/signbank_logo_ympyra1_sininen-compressor.png' %}"
+}
+// Sitelinks searchbox
+{
+  "@context": "http://schema.org",
+  "@type": "WebSite",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ request.scheme }}://{{ request.get_host }}{% url 'dictionary:public_gloss_list' %}?keyword={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+    {% block structureddata %}{% endblock %}
+    <link rel="stylesheet" media="screen" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/signbank.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dataset.css' %}">
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="{% static 'favicon/apple-icon-57x57.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'favicon/apple-icon-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'favicon/apple-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'favicon/apple-icon-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'favicon/apple-icon-114x114.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'favicon/apple-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'favicon/apple-icon-144x144.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'favicon/apple-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-icon-180x180.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192"  href="{% static 'favicon/android-icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'favicon/favicon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="{% static 'favicon/manifest.json' %}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{% static 'favicon/ms-icon-144x144.png' %}">
+    <meta name="theme-color" content="#ffffff">
+{% if not user.is_authenticated %}
+    {% include "policyconsent.html" %}
+{% endif %}
+    {% block extrahead %}{% endblock %}
+  </head>
+  <body>
+    <div id="wrap">
+        <div class="container">
+            <div id="leftcontentborder"></div>
+            <div id="rightcontentborder"></div>
+            <header id="header">{# Translators: Site title #}
+                <div class="headerlogo">
+                    <h1>
+                        <a href="{% url 'root_page' %}" title="{% blocktrans %}Finnish Signbank{% endblocktrans %}">
+                            <img id="logoheadersignbank"
+                                 src="{% static 'img/signbank_logo_laatikko_valkoinen_crop-compressor.png' %}"
+                                 alt="{% blocktrans %}Finnish Signbank{% endblocktrans %}">
+                        </a>
+                    </h1>
+                </div>
+                <div id="langbar">{% include "langbar.html" %}</div>
+            </header>
+            <div id="menu">
+                {% include "menu.html" %}
+            </div>
+            {% bootstrap_messages %}
+            <main role="main">
+            {% block content %}{% blocktrans %}(No content){% endblocktrans %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <footer id="footer">
+       <div id="footercontainer" class="container">
+            <div class="footerbg">
+                <div class="logoholder">
+                   <a href="https://www.jyu.fi" rel="external">
+                     <img id="logojy" src="{% static 'img/jyu-logo_100-compressor.png' %}" class="logofooter" alt="{% blocktrans %}University of Jyväskylä{% endblocktrans %}">
+                   </a>
+                   <a href="http://www.kuurojenliitto.fi/" rel="external">
+                     <img id="logokl"
+                       {% if LANGUAGE_CODE == 'fi' %}src="{% static 'img/kl-logo_fin_100-compressor.png' %}"
+                       {% elif LANGUAGE_CODE == 'sv' %}src="{% static 'img/kl-logo_sve_100-compressor.png' %}"
+                       {% else %}src="{% static 'img/kl-logo_eng_100-compressor.png' %}"
+                       {% endif %}
+                       class="logofooter" alt="{% blocktrans %}Finnish Association of the Deaf{% endblocktrans %}">
+                   </a>
+                   <a href="https://www.kielipankki.fi/" rel="external">
+                     <img id="logokielipankki" src="{% static 'img/kielipankki_logo_cropped-compressor.png' %}" class="logofooter" alt="{% blocktrans %}The Language Bank of Finland{% endblocktrans %}">
+                   </a>
+                   <a href="https://www.csc.fi" rel="external">
+                     <img id="logocsc" src="{% static 'img/csc_2012_logo-compressor.png' %}" class="logofooter" alt="{% blocktrans %}CSC - IT center for science{% endblocktrans %}">
+                   </a>
+                </div>
+                <div id="license">
+
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+
+<script>
+$('a.close').on('click', function(event){
+    event.preventDefault();
+    event.stopPropagation();
+    var parent = $(this).parent();
+    $.get(event.currentTarget.href).done(function () {
+        parent.remove();
+        var badge = $('#live_notify_badge');
+        var val = parseInt(badge.text())
+        badge.text(val - 1);
+        if (val - 1 <= 0) {
+            $('button#notifications-list').removeClass('btn-danger');
+        }
+    });
+});
+$('a#notifications_mark_all_read').on('click', function(event){
+    event.preventDefault();
+    event.stopPropagation();
+    $.get(event.currentTarget.href).done(function () {
+        $('div.notification').remove();
+        var badge = $('#live_notify_badge');
+        badge.text("0");
+        $('button#notifications-list').removeClass('btn-danger');
+    });
+});
+</script>
+    {% block extrajs %}{% endblock %}
+  </body>
+</html>
+    
+
+  

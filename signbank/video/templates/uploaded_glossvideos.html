@@ -1,0 +1,157 @@
+{% extends "baselayout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% block bootstrap3_title %}{% blocktrans %}Manage Uploaded Videos{% endblocktrans %} | {% endblock %}
+{% block extrahead %}
+<link rel="stylesheet" href="{% static "css/jquery-ui/jquery-ui.min.css" %}">
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{% blocktrans %}Manage Uploaded Videos{% endblocktrans %} <small>{% blocktrans %}Connect Glossvideos to Glosses{% endblocktrans %}</small></h2>
+</div>
+<div id="dataset" class="panel panel-default">
+    <div class="panel-body">
+        <form id="dataset-select">
+            <h3><span class="label label-danger">{% blocktrans %}Select the dataset you want to work with!{% endblocktrans %}</span></h3>
+            <label for="id_dataset"><strong>{% blocktrans %}Dataset{% endblocktrans %}:</strong></label>
+            {{form.dataset}}
+            <input class='btn btn-primary' type='submit' value='{% blocktrans %}Ok{% endblocktrans %}'>
+        </form>
+    </div>
+</div>
+<div class="pagination">
+    <span class="step-links">
+        <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}{# Insert dataset from request #}
+            <li><a href="?page={{ page_obj.previous_page_number }}&dataset={{request.GET.dataset}}">&laquo; {% blocktrans %}previous{% endblocktrans %}</a>
+        {% endif %}
+        {% for curpage in page_obj.paginator.page_range %}
+            <li{% if curpage == page_obj.number %} class="active"{% endif %}><a href="?page={{ curpage }}&dataset={{request.GET.dataset}}">{{ curpage }}</a>
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li><a href="?page={{ page_obj.next_page_number }}&dataset={{request.GET.dataset}}">{% blocktrans %}next{% endblocktrans %} &raquo;</a>
+        {% endif %}
+        </ul>
+        <p>{% blocktrans %}Total of{% endblocktrans %} {{ page_obj.paginator.count }} {% blocktrans %}videos{% endblocktrans %}.</p>
+    </span>
+</div>
+<div id="glossvideos" class="row">
+{% for video in videos %}
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">{{video.videofile}}</div>
+            <div class="panel-body">
+            <form id="glossvideo{{video.pk}}" class="video-form" method="POST" action="{% url 'video:glossvideo_update' %}">
+                {% csrf_token %}
+                <input type="hidden" name="glossvideo" class="glossvideo-pk" value="{{video.pk}}">
+                <div id="videocontainer">
+                    <div class="player">
+                        <video id="{{video.pk}}" width="450" preload="metadata" controls muted>
+                            {% if video.get_extension == '.mp4' %}
+                            <source src="{{video.videofile.url|urlencode}}" type="video/mp4">
+                            {% elif video.get_extension == '.webm' %}
+                            <source src="{{video.videofile.url|urlencode}}" type="video/webm">
+                            {% endif %}
+                            {% blocktrans %}Your browser does not support the video tag.{% endblocktrans %}
+                        </video>
+                    </div>
+                </div>
+                <div class="ui-widget">
+                    <label for="id_gloss"><strong>{% blocktrans %}Gloss{% endblocktrans %}:</strong></label>
+                    <input name="gloss" required="" id="id_gloss" class="gloss-autocomplete" type="text">
+
+                    <input class="btn btn-primary" type="submit" value="{% blocktrans %}Save{% endblocktrans %}">
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+<div style="text-align:center;">
+    <button type="button" id="update-multiple-videos" class="btn btn-info btn-lg" style="margin-bottom:15px;" onclick="updateVideos()">
+        {%blocktrans%}Save all{%endblocktrans%}</button>
+</div>
+{% endblock %}
+{% block extrajs %}
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script>
+  $( function() {
+    var availableTags = [{% for g in gloss_choices %}{label:"{{g.idgloss}}", value:"{{g.id}}"},{% endfor %}];
+    $( ".gloss-autocomplete" ).autocomplete({
+      source: availableTags
+    });
+  } );
+</script>
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+// This script is used to save multiple instances at once with ajax.
+function updateVideos(){
+    var forms = document.getElementsByClassName("video-form");
+    var updatelist = [];
+    var formlist = [];
+    for (var i=0; i<forms.length; i++){
+        var selected = forms[i].getElementsByClassName("gloss-autocomplete")[0];
+        // Only update the ones that don't have empty value.
+        if (selected.value != "") {
+            var glossvideo = forms[i].getElementsByClassName("glossvideo-pk")[0];
+            // These will be saved, as they have a value set.
+            updatelist.push({"glossvideo": glossvideo.value, "gloss": selected.value});
+            // Add the current form to be "removed" from the page.
+            formlist.push(forms[i]);
+        }
+    }
+    // Send ajax post request.
+    $.ajax({url: "/video/update/", type: "post", contentType: "application/json", context:{"forms":formlist},
+      data:JSON.stringify({"updatelist": updatelist, "csrfmiddlewaretoken": csrftoken, "ajax": "true"})
+     })
+     .done(function() {
+        forms = this.forms;
+        for (var i=0; i<forms.length; i++){
+            // Set the selected value empty, to make it empty even on soft refresh.
+            var selected = "";
+            // Only update the ones that don't have empty value.
+            if (selected.value != "") {
+                forms[i].getElementsByClassName("gloss-autocomplete")[0].value = "";
+                var alert = document.createElement("div");
+                alert.className = "alert alert-success";
+                alert.innerHTML = "{%blocktrans%}GlossVideo successfully updated!{%endblocktrans%}";
+                forms[i].parentNode.appendChild(alert);
+                forms[i].parentNode.removeChild(forms[i]);
+            }
+        }
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+        alert(errorThrown+"("+textStatus+"): {% blocktrans %}Did you provide all values as id numbers?{% endblocktrans %}");
+    });
+}
+</script>
+{% endblock %}
